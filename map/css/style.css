@@ -11,7 +11,7 @@ html {
 body {
 	width: 100%;
 	height: 100%;
-	overflow: hidden;
+	/* overflow: hidden; */
 	margin: 0px;
 	padding: 0px;
 	font: normal normal 14px 'メイリオ', Trebuchet, Verdana, sans-serif;
@@ -232,88 +232,6 @@ ul, li {
 	margin-top: 5px;
 }
 
-.infoset_params_select {
-	border: 0;
-	padding: 10px;
-	border: solid 1px #ccc;
-	background-color: white;
-	margin: 0 0 5px;
-	width: 95%;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	-moz-appearance: button;
-	-webkit-appearance: button;
-	appearance: button;
-}
-
-.infoset_params_textbox, .infoset_params_area {
-	border: 0;
-	padding: 10px;
-	border: solid 1px #ccc;
-	margin: 0 0 5px;
-	width: 95%;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	-moz-appearance: button;
-	-webkit-appearance: button;
-	appearance: button;
-}
-
-input:focus {
-	border:solid 1px #EEA34A;
-}
-
-#act_button {
-	margin-top: 10px;
-	margin-left: 20px;
-	margin-right: 20px;
-	text-align: center;
-}
-
-.act_button_input_darkblue {
-    width: 100%;
-    margin: 0;
-    padding: 10px;
-	background: -webkit-gradient(linear, left top, left bottom, from(darkblue), to(#35509F));
-	border: 1px darkblue solid;
-    color: white;
-	font-size: 16px;
-    -webkit-appearance: none;
-    -webkit-border-radius: 10px;
-    -webkit-box-shadow: 0 2px 2px #CCC;
-    text-shadow: 1px 2px 3px #C45C00;
-}
-
-.act_button_input_lightblue {
-    width: 100%;
-    margin: 0;
-    padding: 10px;
-	background: -webkit-gradient(linear, left top, left bottom, from(#3399cc), to(lightblue));
-	border: 1px darkblue solid;
-    color: black;
-	font-size: 16px;
-    -webkit-appearance: none;
-    -webkit-border-radius: 10px;
-    -webkit-box-shadow: 0 2px 2px #CCC;
-}
-
-.act_button_input_red {
-    width: 100%;
-    margin: 0;
-    padding: 10px;
-	background: -webkit-gradient(linear, left top, left bottom, from(red), to(#ff3300));
-	border: 1px red solid;
-    color: white;
-	font-size: 16px;
-    -webkit-appearance: none;
-    -webkit-border-radius: 10px;
-    -webkit-box-shadow: 0 2px 2px #CCC;
-    text-shadow: 1px 2px 3px #C45C00;
-}
-
-
 #act_buttons {
 	margin-top: 10px;
 	margin-left: 10px;
@@ -330,14 +248,10 @@ input:focus {
 	width: 49%;
 }
 
-#errmsg {
-	margin-left: 5px;
-	margin-right: 5px;
+.errmsg {
 	padding: 5px;
 	color: red;
 	font-weight: bold;
-	text-align: left;
-	display: none;
 }
 
 /* マップ関連
@@ -351,6 +265,16 @@ input:focus {
 	height: 100%;
 	position: absolute;
 	z-index: 1;
+}
+
+#map_menu_top {
+	width: 100%;
+	height: 50px;
+	position: absolute;
+	z-index: 2;
+	left: 0px;
+       	top: 63px;
+	vertical-align: middle;
 }
 
 #map_menu_bottom {
@@ -410,15 +334,29 @@ input:focus {
 	width: 30%;
 	text-align: right;
 	vertical-align: middle;
-	filter:alpha(opacity=1);
-	-moz-opacity: 1;
-	opacity: 1;
 }
 
 #map_menu_right img {
 	height: 30px;
 	margin-top: 5px;
 	margin-right: 10px;
+}
+
+#map_menu_right .map_menu_right_insert {
+	float: right;
+	padding-top: 10px;
+	padding-right: 10px;
+	vertical-align: middle;
+}
+#map_menu_right a {
+	text-decoration: none;
+}
+#map_menu_right a:link, #map_menu_right a:visited {
+	color: white;
+}
+#map_menu_right a:active, #map_menu_right a:focus, #map_menu_right a:hover {
+	text-decoration: underline;
+	color: white;
 }
 
 #map_insert_menu {
@@ -431,8 +369,12 @@ input:focus {
 
 /*Google Maps 情報ウィンドウの縦スクロール防止*/
 .gm-style-iw{
-  white-space: nowrap;
-	overflow: hidden ! important;
+    white-space: nowrap;
+    overflow: hidden ! important;
+}
+
+#place_set {
+    overflow: auto;
 }
 
 #info_window {
@@ -469,7 +411,7 @@ input:focus {
 }
 
 .status_off {
-	background-color: white;
+	background-color: lightgray;
 	color: black;
 }
 
@@ -478,14 +420,14 @@ input:focus {
 	color: black;
 }
 
-.status_sleep {
-	background-color: darkblue;
-	color: white;
+.status_close {
+	background-color: white;
+	color: black;
 }
 
 .status_holiday {
-	background-color: red;
-	color: white;
+	background-color: white;
+	color: black;
 }
 
 /* マップ詳細
@@ -586,4 +528,13 @@ input:focus {
 #map_menu img, #act_button img, #act_buttons img {
 	max-width: 100%;
 	max-height: 100%;
+}
+
+/* colorbox内画面設定
+----------------------------------------------- */
+#box_main {
+	background-color: white;
+	text-align: center;
+        
+	/* overflow: scroll; */
 }

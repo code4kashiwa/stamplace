@@ -1,52 +1,22 @@
 ﻿// オブジェクト定義
 var map;						// マップオブジェクト
 var markdata;					// 施設・店舗情報
-var gMarkerCenter;
-var insertWindow;
-var markArray = [];				// マーカー格納配列
-var windowArray = [];			// メッセージウィンドウ格納配列
-var isViewMapTopMenu = true;				// マップ上メニュー表示フラグ
-var isViewMapBottomMenu = true;				// マップ下メニュー表示フラグ
 
 // マップの中心位置設定
 var centerLat = base_lat;
 var centerLng = base_lon;
-var zoomSize = map_min_size;
 
 var vImageColor = {0: 'gray', 1: 'yellow', 2: 'white', 3: 'white', 4: 'white'};	// マーカーの色
-var vStatus = {0: '<div class="status_base status_off">仮登録</div>', 1: '<div class="status_base status_active">利用可</div>', 2: '<div class="status_base status_close">利用不可</div>', 3: '<div class="status_base status_holiday">利用不可</div>', 4: '<div class="status_base status_holiday">時間未登録</div>'};	// 場所の状態
-var weekArray = ['--選択してください--', '日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '無休'];
-
-$(document).ready(function(){
-    $(".iframe").colorbox({iframe:true, width:"90%", height:"90%"});
-});
-
-function detailbox(place_id) {
-    // 詳細リンクが押された時の表示画面設定
-    document.getElementById("info_button_colorbox").href = "placedetail.php?pid=" + place_id;
-    document.getElementById("info_button_colorbox").click();
-}
-function insertbox(lat, lng) {
-    // 登録リンクが押された時の表示画面設定
-    document.getElementById("info_button_colorbox").href = "mapplaceset.php?lat=" + lat + "&lng=" + lng;
-    document.getElementById("info_button_colorbox").click();
-}
 
 /* 地図の初期化 */
-function initialize() {
-
-	/* div:map のサイズ設定 */
-	dy = window.innerHeight - 100;
-	document.getElementById("map").style.height = dy+'px';
-        document.getElementById("main").style.height = dy+'px';
-	document.getElementById("map_menu_bottom").style.top = (dy + 14)+'px';
+function initialize(prm_lat, prm_lng, prm_status) {
 
 	/* 地図のオプション設定 */
 	var myOptions={
 		/*初期のズーム レベル */
-		zoom: map_min_size,
+		zoom: map_max_size,
 		/* 地図の中心点 */
-		center: new google.maps.LatLng(base_lat, base_lon),
+		center: new google.maps.LatLng(prm_lat, prm_lng),
 		/* デフォルトの UI */
 		disableDefaultUI: true,
 /*
@@ -62,88 +32,22 @@ function initialize() {
 	};
 
 	/* 地図オブジェクト */
-	map=new google.maps.Map(document.getElementById("map"), myOptions);
-        
-        /* 中心に十字のマーカーを置く */
-        gMarkerCenter = new google.maps.Marker({
-            position: new google.maps.LatLng(base_lat, base_lon),
-            map: map,
-            icon: './img/marker/center.png',
-            draggable: true
-        });
+	map = new google.maps.Map(document.getElementById("map_detail"), myOptions);
 
-    /* 店舗データ取得 */
-	$.ajax({
-		type: "GET",
-		dataType: "jsonp",
-		data: {
-                    "apikey": "1",
-                    "res": "jsonp"
-		},
-		cache: false,
-		url: api_protocol + "//" + api_domain + api_path + "getPlaceInfo.php?callback=getplaceinfo",
-		success: function(data)
-		{
-			markdata = data['data'];
+	/* 店舗の座標設定 */
+	var place_latlng= new google.maps.LatLng(prm_lat, prm_lng);
 
-			/* マーカーオブジェクト */
-			for (i = 0; i < markdata.length; i++) {
-				var shop = markdata[i];
+	/* マーカーアイコン */
+	var iconImg = new google.maps.MarkerImage(
+		'./img/marker/marker_' + vImageColor[prm_status] + '.png'
+	);
 
-				var shop_latlng= new google.maps.LatLng(shop.lat, shop.lng);
-
-				var iconImg = new google.maps.MarkerImage(
-					'./img/marker/marker_' + vImageColor[shop.view_status] + '.png'
-				);
-
-				var marker = new google.maps.Marker({
-					position: shop_latlng,
-					map: map,
-					icon: iconImg,
-					title: shop.place_name
-				});
-
-				markArray[i] = marker;
-
-				/* マーカーがクリックされた時 */
-				attachMessage(markArray[i], i);
-
-			}
-		}
+	/* マーカーオブジェクト */
+	var marker = new google.maps.Marker({
+		position: place_latlng,
+		map: map,
+		icon: iconImg,
 	});
-
-        // 中心位置移動時の処理
-        google.maps.event.addListener(map, 'center_changed', function(){
-            var pos = map.getCenter();
-            gMarkerCenter.setPosition(pos);
-            gMarkerCenter.setTitle('map center: ' + pos);
-        });
-
-        // 十字のドラッグ＆ドロップ時の処理
-        google.maps.event.addListener(gMarkerCenter, 'dragend', function(){
-            map.panTo(gMarkerCenter.position);
-        });
- 
-        // 十字のクリック時の処理
-        google.maps.event.addListener(gMarkerCenter, 'click', function(){
-            if(insertWindow)
-                insertWindow.close();
-            var pos = map.getCenter();
-            insertWindow = new google.maps.InfoWindow({
-                content: '<a style="text-decoration: none; color: black;" href="javascript:insertbox(' + pos.lat() + ',' + pos.lng() + ')">この場所を登録</a>'
-            });
-            insertWindow.open(map, gMarkerCenter);
-
-            centerLat = pos.lat();
-            centerLng = pos.lng();
-            zoomSize = map.getZoom();
-         
-            map.setZoom(map_max_size);
-
-            google.maps.event.addListener(insertWindow, 'closeclick', function(){
-                moveZoomPosition(centerLat, centerLng, zoomSize);
-            });
-        });
 }
 
 /* マーカークリック時のイベント設定 */
@@ -320,3 +224,10 @@ function updatePosition(position) {
 	// 選択された位置に移動＆ズームアップ
 	moveZoomPosition(gpslat, gpslng, map_max_size);
 }
+
+/* エラー処理 */
+function handleError(positionError) {
+alert("GPSでの位置情報取得に失敗しました。<br />ErrorMsg: " + positionError.message);
+}
+
+

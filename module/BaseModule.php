@@ -4,7 +4,8 @@
  */
 
 //require_once(dirname(__FILE__) . "/Init.inc");
-require_once('/home/code4kashiwa/www/stamplace/module/Init.inc');
+//require_once('/home/code4kashiwa/www/stamplace/module/Init.inc');
+require_once('../module/Init.inc');
 
 // アプリケーション内での例外を返す
 class BaseModuleException extends Exception { }
@@ -15,7 +16,7 @@ class baseModule
 	var $appName = '';
 	// リクエストパラメーター
 	var $requestType = "GET";
-	var $params = null;
+	var $params = array();
 	// 表示テンプレート
 	var $viewTemplate;
 	// エラー判定
@@ -82,15 +83,15 @@ class baseModule
 	function getParams()
 	{
 		// POST
-		if($_SERVER["REQUEST_METHOD"] != "POST")
+		if($_SERVER["REQUEST_METHOD"] == "POST")
 		{
-			$this->requestType = "GET";
-			$this->params = $_GET;
+			$this->requestType = "POST";
+			$this->params = $_POST;
 		}
 		// GET
 		else
 		{
-			$this->params = $_POST;
+			$this->params = $_GET;
 		}
 	}
 
@@ -109,15 +110,15 @@ class baseModule
 		// 改行コードを<br>に変更
 		if($lfRepl)
 			$bufStr = str_replace("\r\n", "<br>", $bufStr);
-		
+
 		return $bufStr;
 	}
-	
+
 	function decodeHtmlStr($text)
 	{
 		// <br>を改行コードに変更
 		$bufStr = str_replace("<br>", "\r\n", $text);
-		
+
 		return $bufStr;
 	}
 
@@ -134,8 +135,6 @@ class baseModule
 		if($dbErrPrm != null)  $this->dbErrQuery = print_r($dbErrPrm, true);
 		// ログ出力
 		$this->logWrite(SP_LOG_ERROR, $this->errMsg);
-		// 例外発生
-		throw new BaseModuleException($this->errMsg);
 	}
 
 	/*
@@ -144,7 +143,7 @@ class baseModule
 	function getConnection($dbName, $dbSrv = null, $dbUser = null, $dbPass = null)
 	{
 		$conn = null;
-		
+
 		// 管理DBの場合
 		if($dbName === ADMINDBNAME)
 		{
@@ -159,14 +158,15 @@ class baseModule
 			$this->setErrorInfo(
 				"DBコネクションパラメーターエラー[".$dbName.":".$dbSrv.":".$dbUser.":".$dbPass."]"
 			);
-			// 強制的にNULLを返す
+			throw new BaseModuleException($this->errMsg);
 			return null;
 		}
-		
+
 		try
 		{
 			// DB接続設定
 			$connStr = "mysql:host=".$dbSrv.";dbname=".$dbName;
+			// 日本語設定（これがないと日本語文字化けする）
 			$connOpt = array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8");
 			// DBサーバーへコネクト
 			$conn = new PDO($connStr, $dbUser, $dbPass, $connOpt);
@@ -176,35 +176,48 @@ class baseModule
 		catch(PDOException $pdoe)
 		{
 			$this->setErrorInfo("DB接続エラー", $pdoe->getMessage(), "");
+			throw new BaseModuleException($this->errMsg);
 		}
 		catch(Exception $e)
 		{
 			$this->setErrorInfo("例外（Exception）:[".$e->getMessage()."]");
+			throw new BaseModuleException($this->errMsg);
 		}
-		
+
 		return $conn;
 	}
 
 	/*
 	 *  SQL実行（SELECT）
 	 */
-	function queryExec($conn, $sql)
+	function queryExec($conn, $sql, $condArray = null)
 	{
 		$result = false;
-		
+
 		try
 		{
-			$result = $conn->query($sql);
+			if(is_array($condArray) && count($condArray) > 0)
+			{
+				$sth = $conn->prepare($sql);
+				$sth->execute($condArray);
+				$result = $sth;
+			}
+			else
+			{
+				$result = $conn->query($sql);
+			}
 		}
 		catch(PDOException $pdoe)
 		{
 			$this->setErrorInfo("SQL実行エラー", $pdoe->getMessage(), $sql);
+			throw new BaseModuleException($this->errMsg);
 		}
 		catch(Exception $e)
 		{
 			$this->setErrorInfo("例外（Exception）:[".$e->getMessage()."]");
+			throw new BaseModuleException($this->errMsg);
 		}
-		
+
 		return $result;
 	}
 
@@ -214,7 +227,7 @@ class baseModule
 	function actionExec($conn, $sql, $prm = null)
 	{
 		$result = false;
-		
+
 		try
 		{
 			// SQL実行
@@ -224,12 +237,14 @@ class baseModule
 		catch(PDOException $pdoe)
 		{
 			$this->setErrorInfo("SQL実行エラー", $pdoe->getMessage(), $sql, $prm);
+			throw new BaseModuleException($this->errMsg);
 		}
 		catch(Exception $e)
 		{
 			$this->setErrorInfo("例外（Exception）:[".$e->getMessage()."]");
+			throw new BaseModuleException($this->errMsg);
 		}
-		
+
 		return $result;
 	}
 
@@ -239,7 +254,7 @@ class baseModule
 	function beginExec($conn)
 	{
 		$result = false;
-		
+
 		try
 		{
 			$conn->beginTransaction();
@@ -247,12 +262,14 @@ class baseModule
 		catch(PDOException $pdoe)
 		{
 			$this->setErrorInfo("SQL実行エラー", $pdoe->getMessage(), $sql);
+			throw new BaseModuleException($this->errMsg);
 		}
 		catch(Exception $e)
 		{
 			$this->setErrorInfo("例外（Exception）:[".$e->getMessage()."]");
+			throw new BaseModuleException($this->errMsg);
 		}
-		
+
 		return $result;
 	}
 
@@ -262,7 +279,7 @@ class baseModule
 	function rollbackExec($conn)
 	{
 		$result = false;
-		
+
 		try
 		{
 			$conn->rollBack();
@@ -270,12 +287,14 @@ class baseModule
 		catch(PDOException $pdoe)
 		{
 			$this->setErrorInfo("SQL実行エラー", $pdoe->getMessage(), $sql);
+			throw new BaseModuleException($this->errMsg);
 		}
 		catch(Exception $e)
 		{
 			$this->setErrorInfo("例外（Exception）:[".$e->getMessage()."]");
+			throw new BaseModuleException($this->errMsg);
 		}
-		
+
 		return $result;
 	}
 
@@ -285,7 +304,7 @@ class baseModule
 	function commitExec($conn)
 	{
 		$result = false;
-		
+
 		try
 		{
 			$conn->commit();
@@ -293,12 +312,14 @@ class baseModule
 		catch(PDOException $pdoe)
 		{
 			$this->setErrorInfo("SQL実行エラー", $pdoe->getMessage(), $sql);
+			throw new BaseModuleException($this->errMsg);
 		}
 		catch(Exception $e)
 		{
 			$this->setErrorInfo("例外（Exception）:[".$e->getMessage()."]");
+			throw new BaseModuleException($this->errMsg);
 		}
-		
+
 		return $result;
 	}
 
@@ -308,7 +329,7 @@ class baseModule
 	function createSelectSql($tbName, $orderBy = null, $cond = array())
 	{
 		$whereArray = array();
-		
+
 		// SQL文を発行
 		$sql = "SELECT * FROM ".$tbName;
 		if(count($cond) > 0)
@@ -323,7 +344,7 @@ class baseModule
 		{
 			$sql .= " ORDER BY ".$orderBy;
 		}
-		
+
 		return $sql;
 	}
 
@@ -340,7 +361,7 @@ class baseModule
 			if($colName != "insert_timestamp" && $colName != "update_timestamp" && $colName != "status")
 				$colInfo[] = $colName;
 		}
-		
+
 		return $colInfo;
 	}
 
@@ -366,7 +387,7 @@ class baseModule
 		$sql .= ") VALUES ('";
 		$sql .= join($dataVal, "','");
 		$sql .= "',now(),now(),0)";
-		
+
 		return $sql;
 	}
 
@@ -389,7 +410,7 @@ class baseModule
 		$sql .= join($setStr, ",");
 		$sql .= ", update_timestamp = now() ";
 		$sql .= "WHERE ".$whereKey;
-		
+
 		return $sql;
 	}
 
@@ -402,7 +423,7 @@ class baseModule
 		// SQL文の組み立て
 		$sql  = "DELETE FROM ".$tbName." ";
 		$sql .= "WHERE ".$whereKey;
-		
+
 		return $sql;
 	}
 }

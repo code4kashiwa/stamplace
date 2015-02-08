@@ -1,3 +1,16 @@
+<!-- 場所登録メニュー -->
+<div id="map_menu_top">
+	<div id="map_menu_under" class="menu_layout_under"></div>
+	<div id="map_menu_over" class="menu_layout_over">
+		<div id="map_menu_left">
+			<div id="site_title" class="map_menu_left_title">サイト名：StamPlaceデモサイト（Ver. 0.90.1）</div>
+		</div>
+		<div id="map_menu_right">
+			<a class="map_menu_right_insert" href="javascript:getGPS();">現在位置に移動</a>
+		</div>
+	</div>
+</div>
+
 <!-- マップ検索メニュー -->
 <div id="map_menu_bottom">
 	<div id="map_menu_under" class="menu_layout_under"></div>

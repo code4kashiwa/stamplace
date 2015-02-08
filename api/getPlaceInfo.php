@@ -1,7 +1,8 @@
 ﻿<?php
 
 //require_once(dirname(__FILE__) . "/../module/ApiModule.inc");
-require_once('/home/code4kashiwa/www/stamplace/module/ApiModule.php');
+//require_once('/home/code4kashiwa/www/stamplace/module/ApiModule.php');
+require_once('../module/ApiModule.php');
 
 // デバッグモード
 if(DEBUGMODE)
@@ -19,6 +20,7 @@ class getPlaceInfoModule
  */
 	function __construct()
 	{
+		$this->api = new ApiModule();
 		return true;
 	}
 
@@ -27,23 +29,27 @@ class getPlaceInfoModule
  */
 	function execute()
 	{
+		$this->api->logWrite(SP_LOG_INFO, "getPlaceInfoModule Start");
+
 		try {
-			$this->api = new ApiModule();
-			$this->api->logWrite(SP_LOG_INFO, "getPlaceInfoModule Start");
+			// DB接続＆API認証
+			$this->api->initApi();
+			// APIキー認証
 			$this->api->isAuthApiKey();
-
-			$resType = (array_key_exists(RESPONSE_TYPE, $this->api->params)) ? $this->api->params[RESPONSE_TYPE] : "json";
-			$encStr = (array_key_exists(RESPONSE_ENC, $this->api->params) && array_key_exists($this->api->params[RESPONSE_ENC], $this->api->encArray)) ? $this->api->params[RESPONSE_ENC] : "utf8";
-			$place = $this->getPlaceSql();
-			$this->api->makeResponse($resType, $place, $encStr);
-
-			$this->api->logWrite(SP_LOG_INFO, "getPlaceInfoModule Finish");
+			// 位置リスト取得
+			$place = $this->getPlaceSql($this->api->params);
+			// ステータス設定
+			$result = $this->api->makeSuccessResponse($place);
 		}
 		catch (BaseModuleException $e)
 		{
-			print $e->getMessage();
-			exit();
+			$result = $this->api->makeErrorResponse($e->getMessage());
 		}
+
+		// レスポンス情報編集
+		$this->api->makeResponse($result);
+
+		$this->api->logWrite(SP_LOG_INFO, "getPlaceInfoModule Finish");
 	}
 
 /*
@@ -52,14 +58,17 @@ class getPlaceInfoModule
 	function getPlaceSql($params = null)
 	{
 		// SQL文の編集
-		$sqlStr  = "SELECT p.place_id,p.lat,p.lng,p.place_name,p.zip,p.address,p.tel,p.status";
-		$sqlStr .= ", CASE WHEN pa.place_id IS NULL THEN 0";
-		$sqlStr .= "  WHEN ( DAYOFWEEK(now()) = pa.off_week_code ) THEN 3";
-		$sqlStr .= "  WHEN ( pa.start_open_time >= now() OR now() >= pa.finish_open_time ) THEN 2";
-		$sqlStr .= "  ELSE 1 END as view_status";
+		$sqlStr  = "SELECT p.place_id";		// 場所ID
+		$sqlStr .= ", p.lat";							// 緯度
+		$sqlStr .= ", p.lng";							// 緯度
+		$sqlStr .= ", p.place_name";			// 場所の名称
+		$sqlStr .= ", p.zip";							// 郵便番号
+		$sqlStr .= ", p.address";					// 住所
+		$sqlStr .= ", p.tel";							// 電話番号
+		$sqlStr .= ", p.status";					// レコードステータス
+		$sqlStr .= ", " . $this->api->getViewStatus();	// 表示ステータス
 		$sqlStr .= " FROM place p";
 		$sqlStr .= " LEFT JOIN place_advance pa ON p.place_id = pa.place_id";
-
 
 		$result = $this->api->getSelectData($sqlStr);
 

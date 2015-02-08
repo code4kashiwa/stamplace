@@ -7,9 +7,12 @@
 define("DEBUGMODE", false);				// PHPのエラーを画面表示するかどうか
 
 // DB関連設定
-define("DBSERVER", "mysql318.db.sakura.ne.jp");		// DBサーバー
-define("BASEDBUSER", "code4kashiwa");			// DBアクセスユーザーID
-define("BASEDBPASS", "c4k0208snow");			// DBアクセスパスワード
+//define("DBSERVER", "mysql318.db.sakura.ne.jp");		// DBサーバー
+define("DBSERVER", "localhost");		// DBサーバー
+//define("BASEDBUSER", "code4kashiwa");			// DBアクセスユーザーID
+define("BASEDBUSER", "root");			// DBアクセスユーザーID
+//define("BASEDBPASS", "c4k0208snow");			// DBアクセスパスワード
+define("BASEDBPASS", "");			// DBアクセスパスワード
 define("ADMINDBNAME", "code4kashiwa_vegemap");		// 管理DB名
 
 // テーブル関連情報（StamPlace標準）
@@ -21,12 +24,26 @@ define("TBL_PLACE_TIME", "place_time");			// 位置別時間情報
 define("TBL_STORE_USER", "store_user");			// 直売所登録担当ユーザ情報
 
 // リクエストパラメータ情報
-define("API_KEY", "apikey");			   	// APIキー
-define("RESPONSE_TYPE", "res");				// レスポンス種別（json, jsonp, xml）
-define("RESPONSE_ENC", "enc");				// 文字エンコード（jis, sjis, euc, utf8）
+define("PRM_API_KEY", "apikey");		   	// APIキー
+define("PRM_RESTYPE", "res");				// レスポンス種別（json, jsonp, xml）
+define("PRM_RESENC", "enc");				// 文字エンコード（jis, sjis, euc, utf8）
+define("PLACE_ID", "pid");		    		// 場所コード
+
+// レスポンスパラメータ情報
+define("RES_STATUS", "result");			   	// レスポンスステータス
+define("STATUS_OK", 0);				   	// OK（レスポンスステータス）
+define("STATUS_NG", 1);				   	// NG（レスポンスステータス）
+define("RES_ERROR", "error");			   	// エラー情報
+define("RES_DATA", "data");			   	// 出力データ
+
+// 表示ステータス情報
+define("VIEW_NG", 0);			 	  	// 表示NG（仮登録）
+define("VIEW_OK", 1);				   	// 表示OK
+define("VIEW_INIT", VIEW_OK);			  	// マップ上からの登録時に設定されるステータス
 
 // ログ関連設定
-define("LOG_PATH", "/home/code4kashiwa/log/api_log.#NOWDATE#.log");	// ログファイル格納場所
+//define("LOG_PATH", "/home/code4kashiwa/log/api_log.#NOWDATE#.log");	// ログファイル格納場所
+define("LOG_PATH", "C:\\xampp\\htdocs\\stamplace\\module\\api_log.#NOWDATE#.log");	// ログファイル格納場所
 define("SP_LOG_DEBUG", 0);				// ログレベル（デバッグ）
 define("SP_LOG_INFO", 1);				// ログレベル（テキスト）
 define("SP_LOG_WARNING", 2);				// ログレベル（警告以上）
