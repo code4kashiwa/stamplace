@@ -1,1 +1,3 @@
-his software is released under the MIT License, see LICENSE.
+#StamPlace
+
+This software is released under the MIT License, see LICENSE.
