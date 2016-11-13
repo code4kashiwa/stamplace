@@ -7,13 +7,10 @@
 define("DEBUGMODE", false);				// PHPのエラーを画面表示するかどうか
 
 // DB関連設定
-//define("DBSERVER", "mysql318.db.sakura.ne.jp");		// DBサーバー
-define("DBSERVER", "localhost");		// DBサーバー
-//define("BASEDBUSER", "code4kashiwa");			// DBアクセスユーザーID
-define("BASEDBUSER", "root");			// DBアクセスユーザーID
-//define("BASEDBPASS", "c4k0208snow");			// DBアクセスパスワード
-define("BASEDBPASS", "");			// DBアクセスパスワード
-define("ADMINDBNAME", "code4kashiwa_vegemap");		// 管理DB名
+define("DBSERVER", "mysql318.db.sakura.ne.jp");		// DBサーバー
+define("BASEDBUSER", "code4kashiwa");			// DBアクセスユーザーID
+define("BASEDBPASS", "c4k0208snow");			// DBアクセスパスワード
+define("ADMINDBNAME", "code4kashiwa_stamplace");		// 管理DB名
 
 // テーブル関連情報（StamPlace標準）
 define("TBL_ADMIN", "admin");				// 管理者ユーザ情報
